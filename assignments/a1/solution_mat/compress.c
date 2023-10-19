@@ -1,5 +1,5 @@
 // libraries
-//#include "contiki.h"
+#include "contiki.h"
 #include <stdio.h> // printing
 //#include <math.h> // math functions like sqrt, cosine, etc.
 #include "sys/rtimer.h"
@@ -11,13 +11,19 @@
 
 #define PI 3.14159265358979323846 // pi (used by cosine functions)
 
-// second attempt
+// dct related functions
 void dct_transform(double x[], double H[][L], double y[][N_/L]);
 void select_coefficients(double y[][N_/L], double y_transmit[][N_/L]);
 void reconstruct_signal(double y_transmit[][N_/L], double H[][L], double x_rec[]);
+
+// array related
 void print_array(double *a, int n); // print array
 double compare_array(double *a, double *b, int n); // compare arrays (before and after transform)
 int entry();
+
+// custom float print
+void printf_float(double x, int p);
+
 // math.h is taking too musch space so I implement my own math functions: 
 double deg_to_rad(double deg);
 double custom_abs(double x);
@@ -42,7 +48,7 @@ PROCESS_THREAD(dct_process, ev, data){
   etimer_set(&timer, CLOCK_SECOND * 5);
 
   while(1) {
-    //printf("Hello world!\n");
+    printf("Hello world!\n");
 
     /* Wait for the periodic timer to expire and then restart the timer. */
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
@@ -84,11 +90,17 @@ int entry(){
     print_array(x, N_);
     printf("Recovered signal:\n");
     print_array(x_rec, N_);
-    printf("Execution time: %lu us\n", (unsigned long)(dct_time + coef_time + recon_time));
+    printf("Execution time:\n");
+    printf("\t DCT time: %lu us\n", (unsigned long)dct_time);
+    printf("\t Selecting coefficients: %lu us\n", (unsigned long)coef_time);
+    printf("\t Reconstruction time: %lu us\n", (unsigned long)recon_time);
+    printf("\t Total: %lu us\n", (unsigned long)(dct_time + coef_time + recon_time));
     double mse = compare_array(x, x_rec, N_);
-    printf("Signal quality (Mean squared error): %f\n", mse);
+    printf("Signal quality (Mean squared error): ");
+    printf_float(mse, 5);
     double cr = L / M; // compression ratio
-    printf("Compression ratio: %f\n", cr);
+    printf("\nCompression ratio: ");
+    printf_float(cr, 5);
 
     return 0;
 }
@@ -165,7 +177,9 @@ double compare_array(double *a, double *b, int n){
 
 void print_array(double *a, int n){
     for (int i = 0; i < n; i++){
-        printf("%f ", a[i]);
+        //printf("%f ", a[i]); // can't print floats on telos >:(
+        printf_float(a[i], 5);
+        printf(" ");
     }
     printf("\n");
 }
@@ -276,4 +290,30 @@ double custom_sqrt(double x) {
 
     // Return the guess as the square root value
     return guess;
+}
+
+// A custom function that prints a double with a specified precision
+void printf_float(double x, int p) {
+    // Check if x is negative
+    if (x < 0) {
+        printf("-");
+        x = -x;
+    }
+    int i = (int)x; // integer part
+    printf("%d", i); // print integer part
+    
+    // is p is positive
+    if (p > 0) {
+        printf("."); // decimal point
+        double f = x - i; // the fractional part of x
+
+        for (int j = 0; j < p; j++) {
+            // multiply f by 10 and get the integer part
+            f = f * 10;
+            i = (int)f;
+
+            printf("%d", i); // print integer part
+            f = f - i; // fractional part
+        }
+    }
 }
