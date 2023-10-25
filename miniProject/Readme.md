@@ -29,3 +29,5 @@ Tested with the source code from "~/contiki-ng/examples/rpl-udp"
 ## Todo
 
 ## Issues and notes
+* Consider if we want to do calculations on the motes or on the receiving side (maybe collect a reasonable amount of data on a mote, encode it, transmit, decode on PC and visualize it there)
+* Look into how the routing and addressing works in the used modules
