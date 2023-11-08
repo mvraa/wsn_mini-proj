@@ -14,8 +14,12 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 #define WITH_SERVER_REPLY  1
-#define UDP_CLIENT_PORT	8765
-#define UDP_SERVER_PORT	5678
+//Client and server on the same mote. Local instances prefixed with LOCAL
+#define LOCAL_UDP_CLIENT_PORT	8780
+#define LOCAL_UDP_SERVER_PORT	5678
+
+#define REMOTE_UDP_SERVER_PORT 8770
+#define REMOTE_UDP_CLIENT_PORT	8765
 
 #define SEND_INTERVAL		  (10 * CLOCK_SECOND)
 
@@ -24,10 +28,11 @@ static uint32_t rx_count = 0;
 
 /*---------------------------------------------------------------------------*/
 PROCESS(udp_client_process, "UDP client");
-AUTOSTART_PROCESSES(&udp_client_process);
+PROCESS(udp_server_process, "UDP server");
+AUTOSTART_PROCESSES(&udp_client_process,&udp_server_process);
 /*---------------------------------------------------------------------------*/
 static void
-udp_rx_callback(struct simple_udp_connection *c,
+udp_rx_callback_client(struct simple_udp_connection *c,
          const uip_ipaddr_t *sender_addr,
          uint16_t sender_port,
          const uip_ipaddr_t *receiver_addr,
@@ -44,6 +49,25 @@ udp_rx_callback(struct simple_udp_connection *c,
   LOG_INFO_("\n");
   rx_count++;
 }
+
+static void
+udp_rx_callback_server(struct simple_udp_connection *c,
+         const uip_ipaddr_t *sender_addr,
+         uint16_t sender_port,
+         const uip_ipaddr_t *receiver_addr,
+         uint16_t receiver_port,
+         const uint8_t *data,
+         uint16_t datalen)
+{
+  LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
+  LOG_INFO_6ADDR(sender_addr);
+  LOG_INFO_("\n");
+#if WITH_SERVER_REPLY
+  /* send back the same string to the client as an echo reply */
+  LOG_INFO("Sending response.\n");
+  simple_udp_sendto(&udp_conn, data, datalen, sender_addr);
+#endif /* WITH_SERVER_REPLY */
+}
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_client_process, ev, data)
 {
@@ -54,13 +78,12 @@ PROCESS_THREAD(udp_client_process, ev, data)
   static uint32_t missed_tx_count;
 
   PROCESS_BEGIN();
-
   SENSORS_ACTIVATE(sht11_sensor); // activate temp/hum sensor
   SENSORS_ACTIVATE(light_sensor); // activate light sensor
 
   /* Initialize UDP connection */
-  simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
-                      UDP_SERVER_PORT, udp_rx_callback);
+  simple_udp_register(&udp_conn, LOCAL_UDP_CLIENT_PORT, NULL,
+                      REMOTE_UDP_SERVER_PORT, udp_rx_callback_client);
 
   etimer_set(&periodic_timer, random_rand() % SEND_INTERVAL);
   while(1) {
@@ -95,13 +118,31 @@ PROCESS_THREAD(udp_client_process, ev, data)
       }
     }
 
+    SENSORS_DEACTIVATE(sht11_sensor); // deactivate temp/hum sensor
+    SENSORS_DEACTIVATE(light_sensor); // deactivate light sensor
+
     /* Add some jitter */
     etimer_set(&periodic_timer, SEND_INTERVAL
       - CLOCK_SECOND + (random_rand() % (2 * CLOCK_SECOND)));
   }
 
-  SENSORS_DEACTIVATE(sht11_sensor); // deactivate temp/hum sensor
-  SENSORS_DEACTIVATE(light_sensor); // deactivate light sensor
+
+
+  PROCESS_END();
+}
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(udp_server_process, ev, data)
+{
+  PROCESS_BEGIN();
+
+  /* Initialize DAG root */
+  NETSTACK_ROUTING.root_start();
+
+  /* Initialize UDP connection */
+  simple_udp_register(&udp_conn, LOCAL_UDP_SERVER_PORT, NULL,
+                      REMOTE_UDP_CLIENT_PORT, udp_rx_callback_server);
 
   PROCESS_END();
 }
