@@ -22,7 +22,7 @@ uip_ipaddr_t sink_ipaddr;
 static uint32_t rx_count = 0;
 static uint32_t PackagesReceived = 0;
 static Data dataPackages [DATA_PACKAGES_INTERMEDIATE][MEASURES]; // Receive Packages like this from the motes
-static AggregatedData* aggData;
+static AggregatedData aggData;
 
 void bufferData(Data*);
 void average(); // Calculate the average from all values in dataPackages and store it in aggData
@@ -52,9 +52,9 @@ udp_rx_callback(struct simple_udp_connection *c,
     LOG_INFO_("\n");
     average();
     PackagesReceived = 0;
-    LOG_INFO("Test for aggData: %d", (int)aggData->avgTemp);
-    simple_udp_sendto(&udp_conn_relay_sink, aggData, sizeof(aggData), &sink_ipaddr);
-    
+    LOG_INFO("Test for aggData: %u \n", (unsigned int)aggData.avgTemp);
+    simple_udp_sendto(&udp_conn_relay_sink, &aggData, sizeof(aggData), &sink_ipaddr);
+    LOG_INFO("Simple udp sendto done \n");
   }
   else{
     PackagesReceived ++;
@@ -68,7 +68,7 @@ udp_rx_callback2(struct simple_udp_connection *c,
         const uip_ipaddr_t *receiver_addr, uint16_t receiver_port,
         const uint8_t *data, uint16_t datalen)
 {
-
+  LOG_INFO("Rx callback2 \n");
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_server_process, ev, data)
@@ -88,6 +88,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
 /*---------------------------------------------------------------------------*/
 
 void average (){
+  LOG_INFO("Calculate average \n");
   float sumTemp = 0;
   float sumHum = 0;
   float sumPhoto = 0;
@@ -101,10 +102,10 @@ void average (){
         sumSolar += dataPackages[i][j].solar;
     }
   }
-  aggData->avgTemp = sumTemp /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
-  aggData->avgHum = sumHum /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
-  aggData->avgPhoto = sumPhoto /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
-  aggData->avgSolar = sumSolar /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
+  aggData.avgTemp = sumTemp /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
+  aggData.avgHum = sumHum /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
+  aggData.avgPhoto = sumPhoto /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
+  aggData.avgSolar = sumSolar /(DATA_PACKAGES_INTERMEDIATE*MEASURES);
 }
 
 void bufferData(Data* data){

@@ -1,5 +1,0 @@
-- investigate the incorporation of data aggregation and dct compression instead of transmitting each sample seperately (this takes too much power)
-
-- investigate the power comsumption of the telosb when idle
-
-- look into how to vizualize data at a sink. Maybe by use of CoAP and a browser.
