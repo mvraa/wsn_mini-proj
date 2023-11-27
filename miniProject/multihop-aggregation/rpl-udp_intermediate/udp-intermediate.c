@@ -22,10 +22,8 @@ uip_ipaddr_t sink_ipaddr;
 static uint32_t rx_count = 0;
 static uint32_t PackagesReceived = 0;
 static Data dataPackages[DATA_PACKAGES_INTERMEDIATE][MEASURES]; // Receive Packages like this from the motes
-static Data aggData;
 
 void bufferData(Data*);
-void average(); // Calculate the average from all values in dataPackages and store it in aggData
 
 PROCESS(udp_server_process, "UDP server");
 AUTOSTART_PROCESSES(&udp_server_process);
@@ -50,7 +48,8 @@ udp_rx_callback(struct simple_udp_connection *c,
     LOG_INFO("Relaying to sink address: ");
     LOG_INFO_6ADDR(&sink_ipaddr);
     LOG_INFO_("\n");
-    average();
+
+    Data aggData = getAverage(dataPackages);
     PackagesReceived = 0;
     LOG_INFO("Test for aggData: %d %d %d %d \n", (int)aggData.temp, (int)aggData.hum, (int)aggData.photo, (int)aggData.solar);
     simple_udp_sendto(&udp_conn_relay_sink, &aggData, sizeof(aggData), &sink_ipaddr);
@@ -76,8 +75,9 @@ PROCESS_THREAD(udp_server_process, ev, data)
   PROCESS_BEGIN();
 
   // sink address: fd00::212::7400::1cdf::a959
-  // TODO: Maybe move this to defs.h?
   uip_ip6addr_u8(&sink_ipaddr, 0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x12, 0x74, 0x00, 0x1c, 0xdf, 0xa9, 0x59);
+  // cooja sink:
+  // uip_ip6addr_u8(&sink_ipaddr, 0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x12, 0x74, 0x03, 0x00, 0x03, 0x03, 0x03);
 
   /* Initialize UDP connection */
   simple_udp_register(&udp_conn_recv_clients, UDP_SERVER_PORT, NULL, UDP_CLIENT_PORT, udp_rx_callback);
@@ -86,26 +86,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
-
-void average (){
-  float sumTemp = 0;
-  float sumHum = 0;
-  float sumPhoto = 0;
-  float sumSolar = 0;
-
-  for (int i = 0; i <DATA_PACKAGES_INTERMEDIATE; i++){
-    for (int j = 0 ; j < MEASURES; j++){
-        sumTemp += dataPackages[i][j].temp;
-        sumHum += dataPackages[i][j].hum;
-        sumPhoto += dataPackages[i][j].photo;
-        sumSolar += dataPackages[i][j].solar;
-    }
-  }
-  aggData.temp = sumTemp / (DATA_PACKAGES_INTERMEDIATE*MEASURES);
-  aggData.hum = sumHum / (DATA_PACKAGES_INTERMEDIATE*MEASURES);
-  aggData.photo = sumPhoto / (DATA_PACKAGES_INTERMEDIATE*MEASURES);
-  aggData.solar = sumSolar / (DATA_PACKAGES_INTERMEDIATE*MEASURES);
-}
 
 void bufferData(Data* data){
   for (int j = 0; j < MEASURES; ++j) {

@@ -20,8 +20,6 @@ static uint32_t rx_count = 0;
 static Data AggDataPackage[AGG_DATA_PACKAGE_LENGTH]; //This stores the aggrated data packages 
 static uint32_t AggData_count = 0;
 
-void printf_float(float, int);
-
 PROCESS(udp_server_process, "UDP server");
 AUTOSTART_PROCESSES(&udp_server_process);
 /*---------------------------------------------------------------------------*/
@@ -38,7 +36,9 @@ udp_rx_callback(struct simple_udp_connection *c,
     Data agg_data;
     memcpy(&agg_data, data, sizeof(agg_data));
 
-    LOG_INFO("Test for aggData: %d %d %d %d \n", (int)agg_data.temp, (int)agg_data.hum, (int)agg_data.photo, (int)agg_data.solar);
+    LOG_INFO("Received aggregated data: ");
+    printRawData(&agg_data);
+    LOG_INFO_("\n");
 
     rx_count++;
     AggDataPackage[AggData_count] = agg_data;
@@ -64,28 +64,3 @@ PROCESS_THREAD(udp_server_process, ev, data)
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
-
-void printf_float(float x, int p) {
-    // Check if x is negative
-    if (x < 0) {
-        printf("-");
-        x = -x;
-    }
-    int i = (int)x; // integer part
-    printf("%d", i); // print integer part
-
-    // is p is positive
-    if (p > 0) {
-        printf("."); // decimal point
-        float f = x - i; // the fractional part of x
-
-        for (int j = 0; j < p; j++) {
-            // multiply f by 10 and get the integer part
-            f = f * 10;
-            i = (int)f;
-
-            printf("%d", i); // print integer part
-            f = f - i; // fractional part
-        }
-    }
-}

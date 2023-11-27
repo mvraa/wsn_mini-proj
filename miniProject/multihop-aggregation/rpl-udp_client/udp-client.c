@@ -14,10 +14,6 @@
 #include <inttypes.h>
 #include "../defs.h"
 
-// sensors
-#include "sht11-sensor.h" // temperature and humidity
-#include "dev/light-sensor.h" // light
-
 #define LOG_MODULE "clientMote"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
@@ -25,9 +21,6 @@ static struct simple_udp_connection udp_conn;
 static uint32_t rx_count = 0;
 //Package to send on every send interval
 static Data dataPackage[MEASURES];
-
-void measureData(uint32_t measure_count);
-
 
 /*---------------------------------------------------------------------------*/
 PROCESS(udp_client_process, "UDP client");
@@ -56,11 +49,12 @@ PROCESS_THREAD(udp_client_process, ev, data){
   static struct etimer periodic_timer;
   
   uip_ipaddr_t dest_ipaddr;
-  // intermediate address: fd00::212::7400::1cdf::a959
-  // TODO: Changed for chooja simulation. Maybe move this to the defs.h ?
-  uip_ip6addr_u8(&dest_ipaddr, 0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x12, 0x74, 0x00, 0x14, 0x6e, 0xc0, 0x3e);
 
-  //static int nodeID = 3; Not needed from my POV. TODO: We can add this to each data struct
+  // intermediate address: fd00::212::7400::146e::c03e
+  uip_ip6addr_u8(&dest_ipaddr, 0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x12, 0x74, 0x00, 0x14, 0x6e, 0xc0, 0x3e);
+  // cooja intermediate:
+  // uip_ip6addr_u8(&dest_ipaddr, 0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x12, 0x74, 0x02, 0x00, 0x02, 0x02, 0x02);
+
   static uint32_t tx_count;
 
   static uint32_t missed_tx_count;
@@ -81,10 +75,13 @@ PROCESS_THREAD(udp_client_process, ev, data){
   while(1) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
   
-  
     /*Record the data*/
-    measureData(measure_count);
-    LOG_INFO("Data measures written \n");
+    dataPackage[measure_count] = getSensorData();
+
+    LOG_INFO("Data measure collected: ");
+    printRawData(&dataPackage[measure_count]);
+    LOG_INFO_("\n");
+
     measure_count ++;
     if (measure_count == MEASURES){
       measure_count=0; // reset counter
@@ -96,14 +93,13 @@ PROCESS_THREAD(udp_client_process, ev, data){
       }
 
       /* Send to DAG root */
-      LOG_INFO("Sending request %"PRIu32" to ", tx_count);
+      LOG_INFO("Sending collected measurements %"PRIu32" to ", tx_count);
       LOG_INFO_6ADDR(&dest_ipaddr);
       LOG_INFO_("\n");
+
       simple_udp_sendto(&udp_conn, dataPackage, sizeof(dataPackage), &dest_ipaddr);
       tx_count++;
-      } 
-      
-      
+    } 
     
   /* Reset Timer */
   etimer_set(&periodic_timer, MEASURE_INTERVAL);
@@ -115,9 +111,3 @@ SENSORS_DEACTIVATE(light_sensor); // deactivate light sensor
 PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
-void measureData(uint32_t measure_count){
-  dataPackage[measure_count].temp = sht11_sensor.value(SHT11_SENSOR_TEMP); // temperature
-  dataPackage[measure_count].hum = sht11_sensor.value(SHT11_SENSOR_HUMIDITY); // humidity       
-  dataPackage[measure_count].photo = light_sensor.value(LIGHT_SENSOR_PHOTOSYNTHETIC); // photo light      
-  dataPackage[measure_count].solar = light_sensor.value(LIGHT_SENSOR_TOTAL_SOLAR); // solar light  
-}
