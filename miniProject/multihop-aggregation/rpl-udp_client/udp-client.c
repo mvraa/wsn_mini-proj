@@ -57,7 +57,6 @@ PROCESS_THREAD(udp_client_process, ev, data){
 
   static uint32_t tx_count;
 
-  static uint32_t missed_tx_count;
   static uint32_t measure_count = 0;
 
   PROCESS_BEGIN();
@@ -78,24 +77,25 @@ PROCESS_THREAD(udp_client_process, ev, data){
     /*Record the data*/
     dataPackage[measure_count] = getSensorData();
 
-    LOG_INFO("Data measure collected: ");
+    #if PRINT_AUX
+      LOG_INFO("Data measure collected: ");
+    #endif
     printRawData(&dataPackage[measure_count]);
+    printEnergyMeasurements();
     LOG_INFO_("\n");
 
     measure_count ++;
     if (measure_count == MEASURES){
       measure_count=0; // reset counter
-    
-      /* Print statistics every 10th TX */
-      if(tx_count % 10 == 0) {
-      LOG_INFO("Tx/Rx/MissedTx: %" PRIu32 "/%" PRIu32 "/%" PRIu32 "\n",
-          tx_count, rx_count, missed_tx_count);
-      }
+      
+      #if PRINT_AUX
+        /* Send to DAG root */
+        LOG_INFO("Sending collected measurements %"PRIu32" to ", tx_count);
+        LOG_INFO_6ADDR(&dest_ipaddr);
+        LOG_INFO_("\n");
+      #endif
 
-      /* Send to DAG root */
-      LOG_INFO("Sending collected measurements %"PRIu32" to ", tx_count);
-      LOG_INFO_6ADDR(&dest_ipaddr);
-      LOG_INFO_("\n");
+      printf("\n");
 
       simple_udp_sendto(&udp_conn, dataPackage, sizeof(dataPackage), &dest_ipaddr);
       tx_count++;
