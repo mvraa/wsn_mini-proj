@@ -81,7 +81,7 @@ PROCESS_THREAD(udp_client_process, ev, data){
       LOG_INFO("Data measure collected: ");
     #endif
     printRawData(&dataPackage[measure_count]);
-    printEnergyMeasurements();
+    //printEnergyMeasurements();
     LOG_INFO_("\n");
 
     measure_count ++;

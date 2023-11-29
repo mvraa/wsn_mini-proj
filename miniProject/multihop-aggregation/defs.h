@@ -103,16 +103,18 @@ void printf_float(float x, int p) {
 void printEnergyMeasurements() {
     energest_flush();
 
-    printf_float(((energest_type_time(ENERGEST_TYPE_TRANSMIT) * 17.4 + energest_type_time(ENERGEST_TYPE_LISTEN) * 19.7 + 
+    uint64_t power = ((energest_type_time(ENERGEST_TYPE_TRANSMIT) * 17.4 + energest_type_time(ENERGEST_TYPE_LISTEN) * 19.7 + 
                         energest_type_time(ENERGEST_TYPE_CPU) * 1.8 + energest_type_time(ENERGEST_TYPE_LPM) * 0.0026) 
-                        / RTIMER_ARCH_SECOND) * 3, 10); // total power used
-    printf("mW ");
+                        / RTIMER_ARCH_SECOND) * 3;
 
-    printf_float(((energest_type_time(ENERGEST_TYPE_TRANSMIT) * 17.4 + 
+    printf("%" PRIu64 "mW ", power);
+
+    power = ((energest_type_time(ENERGEST_TYPE_TRANSMIT) * 17.4 + 
                         energest_type_time(ENERGEST_TYPE_CPU) * 1.8 + energest_type_time(ENERGEST_TYPE_LPM) * 0.0026) 
-                        / RTIMER_ARCH_SECOND) * 3, 10); // power used minus listening
-    printf("mW ");       
-    
+                        / RTIMER_ARCH_SECOND) * 3;
+
+    printf("%" PRIu64 "mW ", power);
+
     printf("%d ", (uint16_t)clock_time()); // clock timer
 }
 
