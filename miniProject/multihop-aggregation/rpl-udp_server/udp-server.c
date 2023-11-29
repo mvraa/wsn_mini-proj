@@ -29,16 +29,17 @@ udp_rx_callback(struct simple_udp_connection *c,
          const uip_ipaddr_t *receiver_addr, uint16_t receiver_port,
          const uint8_t *data, uint16_t datalen)
 {
-    LOG_INFO("Received request %"PRIu32" from ", rx_count);
-    LOG_INFO_6ADDR(sender_addr);
-    LOG_INFO_("\n");
+    #if PRINT_AUX
+        LOG_INFO("Received request %"PRIu32" from ", rx_count);
+        LOG_INFO_6ADDR(sender_addr);
+        LOG_INFO_("\n");
+        LOG_INFO("Received aggregated data: ");
+    #endif
 
     Data agg_data;
     memcpy(&agg_data, data, sizeof(agg_data));
-
-    LOG_INFO("Received aggregated data: ");
     printRawData(&agg_data);
-    LOG_INFO_("\n");
+    printf("\n");
 
     rx_count++;
     AggDataPackage[AggData_count] = agg_data;

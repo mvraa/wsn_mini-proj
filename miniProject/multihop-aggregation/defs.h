@@ -1,12 +1,16 @@
 #ifndef UTILS
 #define UTILS
+
 #include <inttypes.h>
 
 // sensors
 #include "sht11-sensor.h" // temperature and humidity
 #include "dev/light-sensor.h" // light
 
+#include "os/sys/energest.h"
+
 // RPL connection
+#define PRINT_AUX 0 // should other auxillary messages be printed or just the sensor measurements (1=YES, 0=NO)
 #define WITH_SERVER_REPLY  1
 #define UDP_CLIENT_PORT 8765
 #define UDP_SERVER_PORT 5678
@@ -32,6 +36,7 @@ void dataRawPrint(Data *d);
 Data getSensorData();
 Data getAverage(Data d[DATA_PACKAGES_INTERMEDIATE][MEASURES]);
 void printf_float(float x, int p);
+void printEnergyMeasurements();
 
 void printRawData(Data *d){
     printf("%d %d %d %d ", (int)d->temp, (int)d->hum, (int)d->photo, (int)d->solar);
@@ -93,6 +98,24 @@ void printf_float(float x, int p) {
             f = f - i; // fractional part
         }
     }
+}
+
+void printEnergyMeasurements() {
+    energest_flush();
+
+    uint64_t power = ((energest_type_time(ENERGEST_TYPE_TRANSMIT) * 17.4 + energest_type_time(ENERGEST_TYPE_LISTEN) * 19.7 + 
+                        energest_type_time(ENERGEST_TYPE_CPU) * 1.8 + energest_type_time(ENERGEST_TYPE_LPM) * 0.0026) 
+                        / RTIMER_ARCH_SECOND) * 3;
+
+    printf("%" PRIu64 "mW ", power);
+
+    power = ((energest_type_time(ENERGEST_TYPE_TRANSMIT) * 17.4 + 
+                        energest_type_time(ENERGEST_TYPE_CPU) * 1.8 + energest_type_time(ENERGEST_TYPE_LPM) * 0.0026) 
+                        / RTIMER_ARCH_SECOND) * 3;
+
+    printf("%" PRIu64 "mW ", power);
+
+    printf("%d ", (uint16_t)clock_time()); // clock timer
 }
 
 #endif

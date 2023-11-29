@@ -34,9 +34,11 @@ udp_rx_callback(struct simple_udp_connection *c,
         const uip_ipaddr_t *receiver_addr, uint16_t receiver_port,
         const uint8_t *data, uint16_t datalen)
 {
-  LOG_INFO("Received request %"PRIu32" from ", rx_count);
-  LOG_INFO_6ADDR(sender_addr);
-  LOG_INFO_("\n");
+  #if PRINT_AUX
+    LOG_INFO("Received request %"PRIu32" from ", rx_count);
+    LOG_INFO_6ADDR(sender_addr);
+    LOG_INFO_("\n");
+  #endif
   
   Data *d = (struct Data *) data;
 
@@ -45,13 +47,16 @@ udp_rx_callback(struct simple_udp_connection *c,
   
   // If dataPackages is full calculate the aggregatedData and forward it to the sink
   if (PackagesReceived == DATA_PACKAGES_INTERMEDIATE - 1){
-    LOG_INFO("Relaying to sink address: ");
-    LOG_INFO_6ADDR(&sink_ipaddr);
-    LOG_INFO_("\n");
+    #if PRINT_AUX
+      LOG_INFO("Relaying to sink address: ");
+      LOG_INFO_6ADDR(&sink_ipaddr);
+      LOG_INFO_("\n");
+    #endif
 
     Data aggData = getAverage(dataPackages);
     PackagesReceived = 0;
-    LOG_INFO("Test for aggData: %d %d %d %d \n", (int)aggData.temp, (int)aggData.hum, (int)aggData.photo, (int)aggData.solar);
+
+    printf("%d %d %d %d \n", (int)aggData.temp, (int)aggData.hum, (int)aggData.photo, (int)aggData.solar);
     simple_udp_sendto(&udp_conn_relay_sink, &aggData, sizeof(aggData), &sink_ipaddr);
     
   }
