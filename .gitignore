@@ -1,4 +1,7 @@
 .vscode/
+miniProject/DanielSandbox/Visualization/.venv/
+miniProject/DanielSandbox/Visualization/build/
+miniProject/DanielSandbox/Visualization/static/images/*
 
 **/build
 *.ihex
