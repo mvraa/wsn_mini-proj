@@ -12,7 +12,7 @@
 #include "random.h"
 #include <stdint.h>
 #include <inttypes.h>
-#include "../defs.h"
+#include "defs.h"
 
 #define LOG_MODULE "clientMote"
 #define LOG_LEVEL LOG_LEVEL_INFO
@@ -81,7 +81,7 @@ PROCESS_THREAD(udp_client_process, ev, data){
       LOG_INFO("Data measure collected: ");
     #endif
     printRawData(&dataPackage[measure_count]);
-    //printEnergyMeasurements();
+    
     LOG_INFO_("\n");
 
     measure_count ++;
@@ -103,6 +103,7 @@ PROCESS_THREAD(udp_client_process, ev, data){
     
   /* Reset Timer */
   etimer_set(&periodic_timer, MEASURE_INTERVAL);
+  //printEnergyMeasurements();
   }
 
 SENSORS_DEACTIVATE(sht11_sensor); // deactivate temp/hum sensor

@@ -9,7 +9,7 @@
 
 // other
 #include <stdlib.h>
-#include "../defs.h"
+#include "defs.h"
 
 #define LOG_MODULE "IntermediateMote"
 #define LOG_LEVEL LOG_LEVEL_INFO
