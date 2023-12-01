@@ -29,7 +29,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
     static struct etimer timer;
 // Define local variables (reset with every process call)
     PROCESS_BEGIN();
-        etimer_set(&timer, CLOCK_SECOND); // Initiate timer to trigger event
+        etimer_set(&timer, 20 * CLOCK_SECOND); // Initiate timer to trigger event
         
         while(1) {
             // Temperature

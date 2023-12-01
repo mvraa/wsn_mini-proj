@@ -7,7 +7,7 @@
 #include "sht11-sensor.h" // temperature and humidity
 #include "dev/light-sensor.h" // light
 
-#include "os/sys/energest.h"
+//#include "os/sys/energest.h"
 
 // RPL connection
 #define PRINT_AUX 0 // should other auxillary messages be printed or just the sensor measurements (1=YES, 0=NO)
@@ -36,7 +36,7 @@ void dataRawPrint(Data *d);
 Data getSensorData();
 Data getAverage(Data d[DATA_PACKAGES_INTERMEDIATE][MEASURES]);
 void printf_float(float x, int p);
-void printEnergyMeasurements();
+//void printEnergyMeasurements();
 
 void printRawData(Data *d){
     printf("%d %d %d %d ", (int)d->temp, (int)d->hum, (int)d->photo, (int)d->solar);
@@ -99,7 +99,7 @@ void printf_float(float x, int p) {
         }
     }
 }
-
+/*
 void printEnergyMeasurements() {
     energest_flush();
 
@@ -117,5 +117,5 @@ void printEnergyMeasurements() {
 
     printf("%d ", (uint16_t)clock_time()); // clock timer
 }
-
+*/
 #endif

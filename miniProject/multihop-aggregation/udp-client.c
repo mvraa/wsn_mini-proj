@@ -11,7 +11,7 @@
 // other
 #include "random.h"
 #include <stdint.h>
-#include <inttypes.h>
+//#include <inttypes.h> Double include. defs.h provides this already
 #include "defs.h"
 
 #define LOG_MODULE "clientMote"

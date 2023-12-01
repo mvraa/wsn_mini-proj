@@ -1,6 +1,8 @@
 CONTIKI_PROJECT = multihop-aggregation
 all: $(CONTIKI_PROJECT)
-MODULES += os/services/simple-energest
 
 CONTIKI=../../../..
+
+# Energy usage estimation
+MODULES += os/services/simple-energest
 include $(CONTIKI)/Makefile.include
