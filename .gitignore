@@ -2,6 +2,7 @@
 miniProject/DanielSandbox/Visualization/.venv/
 miniProject/DanielSandbox/Visualization/build/
 miniProject/DanielSandbox/Visualization/static/images/*
+miniProject/multihop-aggregation/Visualization/.venv/
 
 **/build
 *.ihex
