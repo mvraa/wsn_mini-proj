@@ -38,7 +38,7 @@ def process_data():
     for i in range(len(data)):
         for j in range(len(data[0])):
             temperature.append(-39.6 + 0.01*data[i][0])
-            humidity.append(-2.0468+ 0.0367 * data[i][1]+ -1.5955*math.e**(-6)*(data[i][1])**2)
+            humidity.append(-2.0468+ (0.0367 * data[i][1]) + ((-1.5955*(10**(-6)))*(data[i][1])**2))
             photo.append(data[i][2]*2.288818)
             solar.append(data[i][3]*0.281616)
 
@@ -65,9 +65,8 @@ def plot_hum():
     plt.plot(humidity, label="Humidity",color="blue")
     
     # Label and legend
-    # TODO: Find out scale for y axis
     plt.xlabel('Time(s)')
-    plt.ylabel('????')
+    plt.ylabel('Relative Humidity (%)')
     #plt.legend()
     plt.title('Humidity')
     plt.grid(True)
@@ -83,9 +82,8 @@ def plot_photo():
     plt.plot(photo, label="Visible light",color="yellow")
     
     # Label and legend
-    # TODO: Find out scale for y axis
     plt.xlabel('Time(s)')
-    plt.ylabel('????')
+    plt.ylabel('Photosynthetically Active Radiation')
     #plt.legend()
     plt.title('Visible light')
     plt.grid(True)
@@ -101,9 +99,8 @@ def plot_solar():
     plt.plot(solar, label="Infrared light",color="red")
     
     # Label and legend
-    # TODO: Find out scale for y axis
     plt.xlabel('Time(s)')
-    plt.ylabel('????')
+    plt.ylabel('Solar Radiation')
     #plt.legend()
     plt.title('Infrared light')
     plt.grid(True)

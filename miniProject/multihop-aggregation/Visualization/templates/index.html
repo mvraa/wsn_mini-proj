@@ -12,11 +12,15 @@
         setTimeout("location.reload(true);",timeoutPeriod);
     }
     
-    window.onload = timedRefresh(5000);
+    window.onload = timedRefresh(30000);
     
     //   -->
     </script>
+
+<h1>WSN mini-project Visualization</h1>
+<h6>This site will automatically update every 30 seconds to show the latest plots</h6>
 <body>
+    
     <img src="{{ url_for('static', filename='images/plot_temp.png') }}" class="image" />
     <img src="{{ url_for('static', filename='images/plot_hum.png') }}" class="image" />
     <img src="{{ url_for('static', filename='images/plot_solar.png') }}" class="image" />
