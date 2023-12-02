@@ -13,6 +13,34 @@
 ## Structure
 * Final version of the code can be found in the directory *multihop-aggregation*
 
+## Energy Measures
+To measure the enery consumption of a mote follow these steps.
+1. Activate the simple-energest module in the makefile (comment it or add the following line after the CONTIKI path).
+   ```
+   MODULES += os/services/simple-energest
+   ```
+2. This will lead to the mote printing something like this every minute 
+
+```
+[INFO: Energest  ] --- Period summary #1 (60 seconds)
+[INFO: Energest  ] Total time  :    1966080
+[INFO: Energest  ] CPU         :       6434/   1966080 (3 permil)
+[INFO: Energest  ] LPM         :    1959646/   1966080 (996 permil)
+[INFO: Energest  ] Deep LPM    :          0/   1966080 (0 permil)
+[INFO: Energest  ] Radio Tx    :         29/   1966080 (0 permil)
+[INFO: Energest  ] Radio Rx    :    1966049/   1966080 (999 permil)
+[INFO: Energest  ] Radio total :    1966078/   1966080 (999 permil)
+```
+3. Login to the mote and pipe the ouput to the corresponding textfile in the *EnergyMeasurement* directory
+```
+make TARGET=sky MOTES=/dev/ttyUSB0 login > EnergyMeasurement/outIntermediate.txt
+```
+4. Run the script *EnergyMeasurement\interpretMeasurements.py* and get the enery consumption printed on the command line
+5. Please make sure there is no gibberish output in the lines of the textfile, that also include *INFO: Energest*. Lines with other content are ok
+
+![This will cause problems](image.png)
+
+
 ## Visualization
 The data is visualized by connecting a laptop to the sink mote and dumping the console output to the file *output.txt* in the directory *Visualization*. Set this up manually by loging in to the mote and pipe console ouput
 ```
