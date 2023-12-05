@@ -1,4 +1,13 @@
+import os
+
 INPUT_FILES = ["outClient.txt","outIntermediate.txt","outServer.txt"]
+
+# Indicate if the measurements were undertaken with our withour Aggregation
+# 
+MODE = "NoAggregation" 
+
+LINES_PER_MEASURE = 8
+AMOUNT_OF_MEASURES = 10
 
 
 # From node datasheet (see docs directory)
@@ -20,8 +29,7 @@ def is_file_empty(file_path):
         return not bool(file.read())
 
 def processFile(input_file):
-    #ticks = {}
-    #total_ticks = {}
+    line_counter = 0
 
     # initialize ticks to zero
     ticks = { u : 0  for u in STATES }
@@ -29,10 +37,13 @@ def processFile(input_file):
     
     with open(input_file, "r") as f:
         for line in f:
+            if line_counter == LINES_PER_MEASURE * AMOUNT_OF_MEASURES:
+                break
             if "INFO: Energest" not in line:
                 continue
             fields = line.split()
             try:
+                line_counter += 1
                 state_index = 3
                 state = fields[state_index]
                 tick_index = state_index + 2
@@ -47,6 +58,8 @@ def processFile(input_file):
                 # add to the time spent in specific state
                 stateTicks = int(fields[tick_index][:-1])
                 ticks[state] += stateTicks
+
+                
             except Exception as ex:
                 print("Failed to process line '{}': {}".format(line, ex))
 
@@ -61,12 +74,14 @@ def processFile(input_file):
     total_charge_mC = total_ticks * total_avg_current_mA / RTIMER_ARCH_SECOND
     total_energy_mJ = total_charge_mC * VOLTAGE
     print("Energy measure for {} mote: {:.2f} mC ({:.3f} mAh) charge consumption, {:.2f} mJ energy consumption in {:.2f} seconds".format(
-        input_file[3:-4],total_charge_mC, total_charge_mC / 3600.0, total_energy_mJ, period_seconds))
+        input_file,total_charge_mC, total_charge_mC / 3600.0, total_energy_mJ, period_seconds))
 
 
 def main():
     for file in INPUT_FILES:
-        if not is_file_empty(file):
-            processFile(file)
+        full_path = os.path.join(MODE,file)
+        print (full_path)
+        if not is_file_empty(full_path):
+            processFile(full_path)
 if __name__ == "__main__":
     main()
