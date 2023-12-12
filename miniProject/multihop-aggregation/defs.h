@@ -23,7 +23,6 @@
 #define AGG_DATA_PACKAGE_LENGTH 10 
 
 // Struct the client nodes use to store data. 
-// After writing MEASURES amount, send a package of DATA_PACKAGE_LENGTH  length to the sink
 typedef struct Data
 {
     float temp;
